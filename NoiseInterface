@@ -1,0 +1,221 @@
+__author__ = 'Rza'
+import sys
+import pygame
+import random
+import noise
+from pygame.locals import *
+from PySide.QtGui import *
+import threading
+import time
+
+qt_app = QApplication(sys.argv)
+pygame.init()
+
+WIDTH = 256
+HEIGHT = 256
+screen = pygame.display.set_mode([WIDTH, HEIGHT])
+
+#colors
+black = (0, 0, 0)
+white = (255, 255, 255)
+blue_grey = (104, 125, 129)
+
+x_multiplier = 0.009
+y_multiplier = 0.009
+octaves = 6
+color_range = 127
+clip = 128.0
+
+red = 255
+green = 255
+blue = 255
+
+
+class InputWindow(QWidget):
+
+    def __init__(self):
+
+        QWidget.__init__(self)
+
+        col01 = 5
+        col02 = 110
+        col03 = 290
+        col04 = 395
+
+        row01 = 6
+        row02 = 32
+        row03 = 58
+        row04 = 84
+        row05 = 110
+
+
+        self.setMinimumSize(101, 185)
+        self.setWindowTitle('Inputs')
+
+        # The label for the recipient control
+        self.recipient_lbl_x = QLabel('X Multiplier:', self)
+        # 5 pixel indent, 25 pixels lower than last pair of widgets
+        self.recipient_lbl_x.move(5, 6)
+        # The recipient control is an entry textbox
+        self.recipient_x = QLineEdit(self)
+        self.add_input(self.recipient_x, str(x_multiplier), 36, 110, 6)
+
+        self.recipient_lbl_y = QLabel('Y Multiplier:', self)
+        self.recipient_lbl_y.move(5, 32)
+        self.recipient_y = QLineEdit(self)
+        self.add_input(self.recipient_y, str(y_multiplier), 36, 110, 32)
+
+        self.recipient_lbl_o = QLabel('Octaves:', self)
+        self.recipient_lbl_o.move(5, 58)
+        self.recipient_o = QLineEdit(self)
+        self.add_input(self.recipient_o, str(octaves), 36, 110, 58)
+
+        self.recipient_lbl_r = QLabel('Range:', self)
+        self.recipient_lbl_r.move(5, 84)
+        self.recipient_r = QLineEdit(self)
+        self.add_input(self.recipient_r, str(color_range), 36, 110, 84)
+
+        self.recipient_lbl_c = QLabel('Clip:', self)
+        self.recipient_lbl_c.move(col01, row05)
+        self.recipient_c = QLineEdit(self)
+        self.add_input(self.recipient_c, str(clip), 36, 110, 110)
+
+        self.recipient_lbl_rd = QLabel('Red:', self)
+        self.recipient_lbl_rd.move(col03, row01)
+        self.recipient_rd = QLineEdit(self)
+        self.add_input(self.recipient_rd, str(255), 36, col04, row01)
+
+        self.recipient_lbl_gn = QLabel('Green:', self)
+        self.recipient_lbl_gn.move(col03, row02)
+        self.recipient_gn = QLineEdit(self)
+        self.add_input(self.recipient_gn, str(255), 36, col04, row02)
+
+        self.recipient_lbl_bl = QLabel('Blue:', self)
+        self.recipient_lbl_bl.move(col03, row03)
+        self.recipient_bl = QLineEdit(self)
+        self.add_input(self.recipient_bl, str(255), 36, col04, row03)
+
+        self.recipient_lbl_width = QLabel('Width:', self)
+        self.recipient_lbl_width.move(col03, row04)
+        self.recipient_width = QLineEdit(self)
+        self.add_input(self.recipient_width, str(256), 36, col04, row04)
+
+        self.recipient_lbl_height = QLabel('Height:', self)
+        self.recipient_lbl_height.move(col03, row05)
+        self.recipient_height = QLineEdit(self)
+        self.add_input(self.recipient_height, str(256), 36, col04, row05)
+
+
+        button = QPushButton("Print", self)
+        button.move(110, 165)
+        button.clicked.connect(self.print_image)
+        button.show()
+
+
+    def print_image(self):
+        pygame.image.save(screen, "noise.png")
+        pass
+
+    def add_input(self, bttn_name, place_holder, width, x, y):
+        bttn_name.setPlaceholderText(place_holder)
+        bttn_name.setMinimumWidth(width)
+        bttn_name.move(x, y)
+        bttn_name.returnPressed.connect(self.on_enter)
+
+    def on_enter(self):
+        global x_multiplier, y_multiplier, octaves, color_range, clip, red, green, blue, WIDTH, HEIGHT, screen
+
+        x_multiplier = float(self.recipient_x.text())
+        y_multiplier = float(self.recipient_y.text())
+        octaves = int(self.recipient_o.text())
+        color_range = float(self.recipient_r.text())
+        clip = float(self.recipient_c.text())
+        red = int(self.recipient_r.text())
+        green = int(self.recipient_gn.text())
+        blue = int(self.recipient_bl.text())
+        WIDTH = int(self.recipient_width.text())
+        HEIGHT = int(self.recipient_height.text())
+
+        screen = pygame.display.set_mode([WIDTH, HEIGHT])
+        redraw()
+
+    def run(self):
+        # Show the form
+        self.show()
+        # Run the Qt application
+        qt_app.exec_()
+
+
+def pop():
+    global tex_w, tex_h, tex_full, octaves, color_range, clip, red, blue, green, WIDTH, HEIGHT
+
+    tex_w = range(WIDTH)
+    tex_h = range(HEIGHT)
+    tex_full = []
+    list_pos = 0
+
+    for x in tex_w:
+        for y in tex_h:
+            tex_full.append(pygame.Surface([1, 1], SRCALPHA))
+
+            #this line converts to the rgb/alpha range 255
+            my_noise = int((noise.snoise2(x * x_multiplier, y * y_multiplier, octaves) * color_range) + clip)
+            my_noise = normalize(my_noise)
+            tex_full[list_pos].fill(pygame.Color(red, green, blue, my_noise))
+            list_pos += 1
+
+            #int for small deviations of color
+            #my_noise = int(noise.snoise2(x * 0.75, y * 0.75, octaves) * 10)
+
+def be_random():
+    blit_pos = 0
+
+    for x in tex_w:
+        for y in tex_h:
+            screen.blit(tex_full[blit_pos], [x, y])
+            blit_pos += 1
+
+def clean_up():
+    scrubber = pygame.Surface([256, 256], SRCALPHA)
+    scrubber.fill(pygame.Color(0, 0, 0))
+    screen.blit(scrubber, [0, 0])
+
+def init_vars():
+    global x_multiplier, y_multiplier, octaves, color_range
+    x_multiplier = float(0.009)
+    y_multiplier = float(0.009)
+    octaves = int(6)
+    color_range = float(127)
+
+def normalize(a):
+    if a <= 0:
+        return 0
+    if a >= 255:
+        return 255
+    else:
+        return a
+
+def redraw():
+    pop()
+    clean_up()
+    be_random()
+    pygame.display.update()
+
+def main():
+    redraw()
+    done = 0
+    while not done:
+        for e in pygame.event.get():
+            if e.type == QUIT or (e.type == KEYUP and e.key == K_ESCAPE):
+                sys.exit()
+
+
+thread = threading.Thread(target=main)
+thread.setDaemon(True)
+thread.start()
+
+app = InputWindow()
+app.run()
+
+if __name__ == "__main__":
+    main()
