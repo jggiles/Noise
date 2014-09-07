@@ -1,20 +1,18 @@
 __author__ = 'Rza'
 import sys
-import pygame
-import random
 from noise import *
-from pygame.locals import *
 from PySide.QtGui import *
+from PIL import Image, ImageDraw
 import threading
 
-
-
 qt_app = QApplication(sys.argv)
-pygame.init()
 
 WIDTH = 1024
 HEIGHT = 1024
-screen = pygame.display.set_mode([WIDTH, HEIGHT])
+
+image = Image.new("RGB", (WIDTH, HEIGHT))
+draw = ImageDraw.Draw(image)
+pixels = image.load()
 
 #colors
 black = (0, 0, 0)
@@ -115,8 +113,8 @@ class InputWindow(QWidget):
 
 
     def print_image(self):
-        pygame.image.save(screen, "noise.png")
-        pass
+        global image
+        image.save("SimplexNoise.png", "PNG")
 
     def add_input(self, bttn_name, place_holder, width, x, y):
         bttn_name.setMinimumWidth(width)
@@ -149,22 +147,22 @@ class InputWindow(QWidget):
 def pop():
     global tex_w, tex_h, tex_full, octaves, color_range, clip, red, blue, green, WIDTH, HEIGHT
 
-    tex_w = range(WIDTH)
-    tex_h = range(HEIGHT)
-    tex_full = []
-    list_pos = 0
     for x in tex_w:
         for y in tex_h:
-            tex_full.append(pygame.Surface([1, 1], SRCALPHA))
             #this line converts to the rgb/alpha range 255
             my_noise = int(snoise2(x * x_multiplier, y * y_multiplier, octaves, 0.5, 2.0,
                                    WIDTH * x_multiplier, HEIGHT * y_multiplier, 12) * color_range + clip)
             my_noise = normalize(my_noise)
-            tex_full[list_pos].fill(pygame.Color(red, green, blue, my_noise))
-            list_pos += 1
+            pixels[x, y] = (my_noise, my_noise, my_noise)
 
 def init_vars():
-    global x_multiplier, y_multiplier, octaves, color_range
+    global x_multiplier, y_multiplier, octaves, color_range, image, draw, pixels, tex_w, tex_h, image
+
+    tex_w = range(WIDTH)
+    tex_h = range(HEIGHT)
+
+
+
     x_multiplier = float(0.009)
     y_multiplier = float(0.009)
     octaves = int(6)
@@ -187,12 +185,10 @@ def redraw():
 
 
 def main():
+    init_vars()
     done = 0
     while not done:
         redraw()
-        for e in pygame.event.get():
-            if e.type == QUIT or (e.type == KEYUP and e.key == K_ESCAPE):
-                sys.exit()
 
 
 thread = threading.Thread(target=main)
