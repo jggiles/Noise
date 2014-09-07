@@ -123,7 +123,7 @@ class InputWindow(QWidget):
         bttn_name.setText(place_holder)
 
     def on_enter(self):
-        global x_multiplier, y_multiplier, octaves, color_range, clip, red, green, blue, WIDTH, HEIGHT, screen, refresh
+        global x_multiplier, y_multiplier, octaves, color_range, clip, red, green, blue, WIDTH, HEIGHT, refresh
 
         x_multiplier = float(self.recipient_x.text())
         y_multiplier = float(self.recipient_y.text())
@@ -145,7 +145,14 @@ class InputWindow(QWidget):
 
 
 def pop():
-    global tex_w, tex_h, tex_full, octaves, color_range, clip, red, blue, green, WIDTH, HEIGHT
+    global octaves, color_range, clip, red, blue, green, WIDTH, HEIGHT, tex_h, tex_w, draw, image
+
+    tex_w = range(WIDTH)
+    tex_h = range(HEIGHT)
+
+    image = Image.new("RGB", (WIDTH, HEIGHT))
+    draw = ImageDraw.Draw(image)
+    pixels = image.load()
 
     for x in tex_w:
         for y in tex_h:
@@ -160,9 +167,6 @@ def init_vars():
 
     tex_w = range(WIDTH)
     tex_h = range(HEIGHT)
-
-
-
     x_multiplier = float(0.009)
     y_multiplier = float(0.009)
     octaves = int(6)
