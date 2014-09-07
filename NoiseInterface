@@ -137,8 +137,6 @@ class InputWindow(QWidget):
         blue = int(self.recipient_bl.text())
         WIDTH = int(self.recipient_width.text())
         HEIGHT = int(self.recipient_height.text())
-
-        screen = pygame.display.set_mode([WIDTH, HEIGHT])
         refresh = True
 
     def run(self):
@@ -161,23 +159,9 @@ def pop():
             #this line converts to the rgb/alpha range 255
             my_noise = int(snoise2(x * x_multiplier, y * y_multiplier, octaves, 0.5, 2.0,
                                    WIDTH * x_multiplier, HEIGHT * y_multiplier, 12) * color_range + clip)
-            #my_noise = normalize(my_noise)
+            my_noise = normalize(my_noise)
             tex_full[list_pos].fill(pygame.Color(red, green, blue, my_noise))
             list_pos += 1
-            #print my_noise
-
-def be_random():
-    blit_pos = 0
-
-    for x in tex_w:
-        for y in tex_h:
-            screen.blit(tex_full[blit_pos], [x, y])
-            blit_pos += 1
-
-def clean_up():
-    scrubber = pygame.Surface([WIDTH, HEIGHT], SRCALPHA)
-    scrubber.fill(pygame.Color(0, 0, 0))
-    screen.blit(scrubber, [0, 0])
 
 def init_vars():
     global x_multiplier, y_multiplier, octaves, color_range
@@ -198,9 +182,6 @@ def redraw():
     global refresh
     if refresh:
         pop()
-        clean_up()
-        be_random()
-        pygame.display.update()
         refresh = False
 
 
