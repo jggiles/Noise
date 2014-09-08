@@ -1,3 +1,5 @@
+#TODO: add offset input to pyside interface for noise variation
+
 __author__ = 'Rza'
 import sys
 from noise import *
@@ -47,7 +49,6 @@ class InputWindow(QWidget):
         row03 = 58
         row04 = 84
         row05 = 110
-
 
         self.setMinimumSize(101, 185)
         self.setWindowTitle('Inputs')
@@ -105,12 +106,10 @@ class InputWindow(QWidget):
         self.recipient_height = QLineEdit(self)
         self.add_input(self.recipient_height, str(HEIGHT), 36, col04, row05)
 
-
         button = QPushButton("Print", self)
         button.move(110, 165)
         button.clicked.connect(self.print_image)
         button.show()
-
 
     def print_image(self):
         global image
@@ -142,7 +141,6 @@ class InputWindow(QWidget):
         self.show()
         # Run the Qt application
         qt_app.exec_()
-
 
 def pop():
     global octaves, color_range, clip, red, blue, green, WIDTH, HEIGHT, tex_h, tex_w, draw, image
@@ -185,8 +183,6 @@ def redraw():
     if refresh:
         pop()
         refresh = False
-
-
 
 def main():
     init_vars()
